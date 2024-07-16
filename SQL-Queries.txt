@@ -1,0 +1,130 @@
+
+#1
+
+SELECT DISTINCT e.name, e.surname
+FROM employees e, destination d, guided_tour gt, tourist_attraction ta
+    WHERE d.country="Germany" 
+		AND gt.travel_guide_employee_AM=e.employees_AM
+		AND gt.tourist_attraction_id=ta.tourist_attraction_id
+		AND ta.destination_destination_id=d.destination_id
+ORDER BY e.name ASC
+;
+
+#2
+
+SELECT e.employees_AM AS travel_guide_id
+FROM employees e , travel_guide tg, guided_tour gt, trip_package tp 
+	WHERE e.employees_AM = tg.travel_guide_employee_AM
+		AND gt.travel_guide_employee_AM = tg.travel_guide_employee_AM
+		AND gt.trip_package_id = tp.trip_package_id
+		AND tp.trip_start >= "2019-01-01" AND tp.trip_end <= "2019-12-31"
+GROUP BY e.employees_AM
+HAVING count(*) > 3
+ORDER BY e.employees_AM ASC
+;
+
+#3
+
+SELECT br.travel_agency_branch_id, count(e.employees_AM) AS number_of_travel_guides
+FROM travel_agency_branch br, employees e
+	WHERE  br.travel_agency_branch_id = e.travel_agency_branch_travel_agency_branch_id
+GROUP BY br.travel_agency_branch_id
+;
+
+#4
+
+SELECT p.trip_package_id, count(DISTINCT r.Reservation_id) AS number_of_reservations
+FROM trip_package p, offer o , reservation r, trip_package_has_destination tpd, destination d
+	WHERE p.trip_package_id = o.trip_package_id
+		AND o.trip_package_id = r.offer_trip_package_id 
+		AND tpd.trip_package_trip_package_id = p.trip_package_id
+		AND tpd.destination_destination_id = d.destination_id
+		AND d.name = "Paris"
+		AND p.trip_start >= "2021-01-01" AND p.trip_end <= "2021-12-31"
+GROUP BY p.trip_package_id
+;
+
+#5
+
+SELECT e.name, e.surname, e.employees_AM AS travel_guide_id
+FROM employees e, guided_tour gt
+    WHERE gt.travel_guide_employee_AM = e.employees_AM
+    GROUP BY gt.travel_guide_employee_AM
+    HAVING count(DISTINCT gt.travel_guide_language_id) = 1
+    ORDER BY e.employees_AM ASC
+;
+
+#6
+
+SELECT  result
+FROM(
+	SELECT 'yes' AS result
+    FROM offer o
+		WHERE o.offer_start >= "2020-01-01" AND o.offer_end <= "2020-12-31"
+    AND EXISTS (SELECT * FROM reservation r
+		WHERE r.offer_id=o.offer_id
+    )
+    UNION
+    SELECT 'no' AS result
+    FROM offer o
+		WHERE o.offer_start >= "2020-01-01" AND o.offer_end <= "2020-12-30"
+    AND NOT EXISTS (SELECT * FROM reservation r
+		WHERE r.offer_id=o.offer_id
+    )
+) result_query
+;
+
+#7
+
+SELECT t.name, t.surname, t.traveler_id
+FROM reservation r, traveler t, trip_package tp
+	WHERE t.gender="male"
+		AND t.age>=40
+		AND t.traveler_id=r.Customer_id
+		AND r.offer_trip_package_id=tp.trip_package_id
+GROUP BY t.traveler_id
+HAVING count(*) > 3
+ORDER BY t.traveler_id ASC
+;
+
+#8
+
+SELECT e.name, e.surname, count(*) AS attraction_number
+FROM employees e, travel_guide tg, guided_tour tour, tourist_attraction att
+	WHERE e.employees_AM = tg.travel_guide_employee_AM
+		AND tour.travel_guide_language_id = 31 
+		AND tour.travel_guide_employee_AM = tg.travel_guide_employee_AM 
+		AND att.tourist_attraction_id = tour.tourist_attraction_id
+GROUP BY e.employees_AM
+ORDER BY e.employees_AM
+;
+
+#9
+
+SELECT d.country
+    FROM trip_package_has_destination tpd, destination d
+    WHERE tpd.destination_destination_id = d.destination_id
+    GROUP BY tpd.destination_destination_id
+    HAVING COUNT(tpd.destination_destination_id) = (
+        SELECT MAX(count_destination)
+        FROM (
+            SELECT COUNT(tpd.destination_destination_id) AS count_destination
+            FROM trip_package_has_destination tpd
+            GROUP BY tpd.destination_destination_id
+        ) sub_query
+    )
+;
+
+#10
+
+SELECT tp.trip_package_id
+FROM trip_package tp
+	WHERE NOT EXISTS 
+    (SELECT * FROM destination d 
+    WHERE d.country="Ireland" AND NOT EXISTS
+		(SELECT * FROM trip_package_has_destination tpd
+        WHERE tp.trip_package_id=tpd.trip_package_trip_package_id
+			AND tpd.destination_destination_id=d.destination_id
+        )
+	)
+;
