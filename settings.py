@@ -2,7 +2,7 @@
 mysql_host =  'localhost' 
 mysql_port = 3306  #this must be integer (this is wrong:'3306')
 mysql_user = 'root'   #you must replace this value with your own settings
-# mysql_passwd = '' #you must replace this value with your own settings 
+mysql_passwd = '' #you must replace this value with your own settings 
 mysql_schema = 'taxidia' #the database name, replace with your ouwn value
 
 # Webserver Settings
